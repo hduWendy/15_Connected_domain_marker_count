@@ -14,9 +14,9 @@ int main()
 	//二值化
 	Mat g_src, labels, stats, centroids, erode_src;
 	threshold(srcMat, g_src, 90, 255, THRESH_BINARY);
-	//设置结构元素
+	//设置结构元素+形态操作
 	Mat element = getStructuringElement(MORPH_RECT, Size(3, 3), Point(-1, -1));
-	morphologyEx(g_src, erode_src, 0, element, Point(-1, -1), BORDER_CONSTANT);
+	morphologyEx(g_src, erode_src, MORPH_ERODE, element, Point(-1, -1), BORDER_CONSTANT);
 	//三通道分离
 	std::vector<cv::Mat>erode_src_part(erode_src.channels());//生成与通道数数目相等的图像容器
 	cv::split(erode_src, erode_src_part);//分解与通道数数目相等的图像容器
