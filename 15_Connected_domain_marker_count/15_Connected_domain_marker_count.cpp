@@ -11,27 +11,20 @@ int main()
 {
 	//读取本地的一张图片，将图像二值化，连通域标记,将硬币的个数 输出至状态栏.
 	cv::Mat srcMat = imread("C:/Users/lenovo/Desktop/数图图片/coin.png");
-	int height = srcMat.rows; //行数
-	int width = srcMat.cols; //每行元素的总元素数量
-	for (int j = 0; j<height; j++)
-	{
-		for (int i = 0; i<width; i++)
-		{
-			//-----------------开始处理每个像素-----------------
-			uchar average = (srcMat.at<Vec3b>(j, i)[0] + srcMat.at<Vec3b>(j, i)[1] +
-				srcMat.at<Vec3b>(j, i)[2]) / 3;
-			uchar threshold = 80;
-			average > threshold ? average = 255 : average = 0;
-			srcMat.at<Vec3b>(j, i)[0] = srcMat.at<Vec3b>(j, i)[1] = srcMat.at<Vec3b>(j, i)[2] = average;
-
-			//-------------结束像素处理------------------------
-		} //单行处理结束
-	}
-
-	Mat src, src_color, g_src, labels, stats, centroids;
-	int num = connectedComponentsWithStats(srcMat, labels, stats, centroids);
+	//二值化
+	Mat g_src, labels, stats, centroids, erode_src;
+	threshold(srcMat, g_src, 90, 255, THRESH_BINARY);
+	//设置结构元素
+	Mat element = getStructuringElement(MORPH_RECT, Size(3, 3), Point(-1, -1));
+	morphologyEx(g_src, erode_src, 0, element, Point(-1, -1), BORDER_CONSTANT);
+	//三通道分离
+	std::vector<cv::Mat>erode_src_part(erode_src.channels());//生成与通道数数目相等的图像容器
+	cv::split(erode_src, erode_src_part);//分解与通道数数目相等的图像容器
+	//连通域标记
+	int num = cv::connectedComponentsWithStats(erode_src_part[0], labels, stats, centroids);
 	std::cout<< "轮廓数" << num-1 << std::endl;
-	for (int i = 0; i < num; i++)
+	//画框
+	for (int i = 1; i <= num-1; i++)
 	{
 		cv::Rect rect;
 		rect.x = stats.at<int>(i, 0);
